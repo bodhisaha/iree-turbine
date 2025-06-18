@@ -61,6 +61,7 @@ from .scheduling.schedule import schedule_graph
 from .type_inference import infer_types
 from .shared_memory_indexing import apply_shared_memory_indexing_corrections
 from .generate_bounds_exprs import generate_bounds_exprs
+from .workgroup_reordering import reorder_workgroups
 
 # Utils
 from .utils.symbol_utils import subs_idxc, safe_subs
@@ -481,6 +482,11 @@ class LaunchableWave(Launchable):
                 self.constraints,
                 print_ir_before,
                 print_ir_after,
+            ),
+            partial(
+                reorder_workgroups,
+                trace,
+                self.workgroup_constraints
             ),
             partial(expand_graph, trace, self.constraints),
             partial(set_post_expansion_indices, trace, self.constraints),

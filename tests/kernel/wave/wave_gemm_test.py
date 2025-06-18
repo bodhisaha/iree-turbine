@@ -362,7 +362,7 @@ def testGemmSmallTiles(
 
 
 @require_e2e
-@pytest.mark.parametrize("shape", get_test_shapes("test_gemm"))
+@pytest.mark.parametrize("shape", [(512, 512, 512)] + get_test_shapes("test_gemm"))
 @pytest.mark.parametrize(
     "enable_scheduling",
     [SchedulingType.NONE, SchedulingType.PREFETCH, SchedulingType.MODULO],
@@ -439,9 +439,9 @@ def testNonTransposeGemm(
 
     hyperparams = {
         ADDRESS_SPACE: SHARED_ADDRESS_SPACE,
-        BLOCK_M: 64,
-        BLOCK_N: 64,
-        BLOCK_K: 32,
+        BLOCK_M: 128,
+        BLOCK_N: 128,
+        BLOCK_K: 64,
         M: shape[0],
         N: shape[1],
         K: shape[2],
@@ -480,7 +480,7 @@ def testNonTransposeGemm(
     gemm = wave_compile(options, gemm)
     a = device_randn(shape[0], shape[2], dtype=torch.float16)
     b = device_randn(shape[2], shape[1], dtype=torch.float16)
-    c = device_zeros(shape[0], shape[1], dtype=torch.float32)
+    c = device_zeros(shape[0], shape[1], dtype=torch.float32) - 1
     asm = gemm(a, b, c)
 
     if dump_generated_mlir:
