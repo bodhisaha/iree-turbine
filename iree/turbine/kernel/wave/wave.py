@@ -31,6 +31,7 @@ from .constraints import (
     TilingConstraint,
     WaveConstraint,
     WorkgroupConstraint,
+    ReorderingConstraint,
     get_grid_shape,
 )
 
@@ -221,6 +222,14 @@ class LaunchableWave(Launchable):
             constraint
             for constraint in self.constraints
             if isinstance(constraint, HardwareConstraint)
+        ]
+    
+    @property 
+    def reordering_constraints(self) -> list[ReorderingConstraint]:
+        return [
+            constraint
+            for constraint in self.constraints
+            if isinstance(constraint, ReorderingConstraint)
         ]
 
     @property
@@ -503,7 +512,7 @@ class LaunchableWave(Launchable):
             partial(
                 reorder_workgroups,
                 trace,
-                self.workgroup_constraints
+                self.reordering_constraints
             ),
             partial(expand_graph, trace, self.constraints),
             partial(set_post_expansion_indices, trace, self.constraints),

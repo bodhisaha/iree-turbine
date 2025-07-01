@@ -362,7 +362,7 @@ def testGemmSmallTiles(
 
 
 @require_e2e
-@pytest.mark.parametrize("shape", [(512, 512, 512)] + get_test_shapes("test_gemm"))
+@pytest.mark.parametrize("shape", get_test_shapes("test_gemm"))
 @pytest.mark.parametrize(
     "enable_scheduling",
     [SchedulingType.NONE, SchedulingType.PREFETCH, SchedulingType.MODULO],
