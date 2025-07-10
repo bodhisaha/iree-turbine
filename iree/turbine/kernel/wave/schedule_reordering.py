@@ -183,7 +183,7 @@ def slice_mma(mma_nodes, lhs_nodes, rhs_nodes, num_slice):
 
     # Checking that MMAs is valid.
     reduction_expand_size = len(reduction_dim_ids)
-    assert reduction_expand_size > num_slice and reduction_expand_size % num_slice == 0
+    assert reduction_expand_size >= num_slice and reduction_expand_size % num_slice == 0
     assert all(x in reduction_dim_ids for x in range(reduction_expand_size))
 
     size_of_slice = reduction_expand_size // num_slice
@@ -318,7 +318,7 @@ def transform_two_PP_clusters(
     clusters.append(SetWavePrio(1).add_to_graph(tmp_graph))
     clusters.append(sliced_mma_nodes[0])
     clusters.append(SetWavePrio(0).add_to_graph(tmp_graph))
-    clusters.append(WorkgroupBarrier().add_to_graph(tmp_graph))
+    clusters.append(SharedMemoryBarrier().add_to_graph(tmp_graph))
     clusters.append(SchedulingBarrier([]).add_to_graph(tmp_graph))
 
     # 3rd cluster local writes.

@@ -26,12 +26,10 @@ from .common.utils import (
 
 
 @require_e2e
-@pytest.mark.parametrize(
-    "shape", [(512, 512, 512), (1792, 1792, 1792), (4864, 4096, 4160)]
-)
+@pytest.mark.parametrize("shape", [(8192, 8192, 8192)])
 @pytest.mark.parametrize(
     "enable_scheduling",
-    [SchedulingType.NONE, SchedulingType.PREFETCH, SchedulingType.MODULO],
+    [SchedulingType.PREFETCH],
 )
 @pytest.mark.parametrize(
     "mfma_variant",
@@ -40,7 +38,7 @@ from .common.utils import (
         MMAType.F32_32x32x8_F16,
     ],
 )
-def testReorderedPureGemm(
+def testReorderedPingPongGemm(
     shape: tuple[int],
     enable_scheduling: SchedulingType,
     mfma_variant: MMAType,
@@ -53,14 +51,14 @@ def testReorderedPureGemm(
     N = shape[1]
     K = shape[2]
     # Workgroup tile sizes
-    BLOCK_M = 64
-    BLOCK_N = 64
-    BLOCK_K = 32
+    BLOCK_M = 128
+    BLOCK_N = 256
+    BLOCK_K = 64
     # Group size
-    GROUP_SIZE_N = 4
+    GROUP_SIZE_M = 16
 
     reordered_gemm, hyperparams = get_reordered_matmul(
-        M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, GROUP_SIZE_N, mfma_variant
+        M, N, K, BLOCK_M, BLOCK_N, BLOCK_K, GROUP_SIZE_M, mfma_variant
     )
 
     perf_filename = request.node.name + ".json"
@@ -72,6 +70,9 @@ def testReorderedPureGemm(
         use_scheduling_barriers=enable_scheduling_barriers,
         benchmark_batch_size=10,
         benchmark_repetitions=3,
+        use_buffer_load_ops=True,
+        use_buffer_store_ops=True,
+        use_stride_cache_swizzle=True,
         benchmark_results_file=(
             os.path.join(dump_perf, "tk_" + perf_filename) if dump_perf else None
         ),
